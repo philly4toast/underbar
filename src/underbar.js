@@ -189,15 +189,24 @@ return results
   _.reduce = function(collection, iterator, accumulator) {
     var accumulator;
     if (accumulator === undefined){
-      accumulator = 0;
-    }
-    if (iterator !== undefined){
+      accumulator = collection[0];
+
+      collection = Array.prototype.slice.call(collection, 1)
       _.each(collection, function(item){
-        accumulator += iterator(accumulator, item)
+        accumulator = iterator(accumulator, item)
+      })
+
+    }else 
+    
+    if (iterator !== undefined){  
+      _.each(collection, function(item){
+        accumulator = iterator(accumulator, item)
       })
     }
     return accumulator;
   };
+
+
 
   // Determine if the array or object contains a given value (using `===`).
   _.contains = function(collection, target) {
