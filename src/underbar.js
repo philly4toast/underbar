@@ -214,26 +214,63 @@ return results
     // terms of reduce(). Here's a freebie to demonstrate!
     return _.reduce(collection, function(wasFound, item) {
       if (wasFound) {
-        return true;
+        return wasFound;
       }
-      return item === target;
+      wasFound = (item === target);
+      return wasFound
     }, false);
   };
 
 
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
+    if (collection === []){
+      return true;
+    }
+     if (iterator === undefined){
+      iterator = _.identity
+     }
+   return _.reduce(collection, function(allPass, item){
+
+     if (!allPass){
+      return false;
+     }
+     allPass = iterator(item);
+     if (allPass){
+      return true;
+     }
+     if (allPass === 0){
+      allPass = false;
+     }
+     return allPass;
+    }, true)
+
     // TIP: Try re-using reduce() here.
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
+    if (iterator === undefined){
+      iterator = _.identity
+    }
+
+    if (collection.length === 0){
+      return false;
+    }
+      for (var i = 0; i < collection.length; i++){
+        var currentItem = collection[i];
+        if (iterator(currentItem)){
+          return true;
+        }
+      }
+
+      return false;
     // TIP: There's a very clever way to re-use every() here.
   };
 
 
-  /**
+  /**``
    * OBJECTS
    * =======
    *
@@ -252,11 +289,31 @@ return results
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    for (var i = 1; i < arguments.length; i++){
+      for (var key in arguments[i]){
+        arguments[0][key] = arguments[i][key];
+      }
+    }
+    return obj;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    var destKeys = Object.keys(obj)
+    for (var i = 1; i < arguments.length; i++){
+      for (var key in arguments[i]){
+        var existsInDest = _.some(destKeys, function(destKey){
+          return destKey === key;
+        })
+        if (arguments[0][key] || existsInDest){
+          continue;
+        }
+        arguments[0][key] = arguments[i][key];
+      }
+    }
+
+    return obj;
   };
 
 
@@ -300,7 +357,37 @@ return results
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var cache = {};
+  return function(){
+   var result;
+   var args = JSON.stringify(arguments)
+      if (cache[args]){
+        result = cache[args];
+      }else{
+        result = func.apply(this, arguments);
+        cache[args] = result;
+      }
+      return result;
+    };  
   };
+
+    
+
+
+    // // if (arg[any] === undefined){
+    // //   cache.arg(any) = value 
+    // }
+    // return function(func) {
+    //   if (cache[arg[0]]) {// 
+    //     return cachedValue
+    //   } else{
+
+    //     js.call(func)
+    //   }
+
+    // }
+
+  
 
   // Delays a function for the given number of milliseconds, and then calls
   // it with the arguments supplied.
@@ -309,6 +396,8 @@ return results
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    var args = Array.prototype.slice.call(arguments,2)
+    setTimeout(function() { func.apply(this, args); }, wait);
   };
 
 
@@ -323,6 +412,20 @@ return results
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    // var arr = Array.prototype.slice.call(array, 0, array.length);
+    var numbers = [];
+    var answer = [];
+    while (numbers.length < array.length){
+      var randomIndex = Math.floor(Math.random() * array.length);
+      if (!numbers.includes(randomIndex)){
+        numbers.push(randomIndex);
+      }
+    }
+    for (var i = 0; i < numbers.length; i++){
+      answer.push(array[numbers[i]])
+    }
+    return answer;
+
   };
 
 
